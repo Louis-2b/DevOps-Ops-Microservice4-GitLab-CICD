@@ -9,3 +9,5 @@ platformdirs==2.5.1
 pylint==2.12.2
 toml==0.10.2
 wrapt==1.13.3
+pytest==7.4.0
+pytest-mock==3.10.0

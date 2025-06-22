@@ -6,7 +6,10 @@ def notification(message):
     mp3_fid = message["mp3_fid"]
     sender_address = os.environ.get("GMAIL_ADDRESS")
     sender_password = os.environ.get("GMAIL_PASSWORD")
-    receiver_address = message["username"]
+    receiver_address = message.get("username")
+
+    if not sender_address or not sender_password or not receiver_address:
+        raise ValueError("Missing environment variables or receiver address")
 
     msg = EmailMessage()
     msg.set_content(f"mp3 file_id: {mp3_fid} is now ready!")

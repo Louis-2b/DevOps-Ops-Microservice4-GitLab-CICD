@@ -1,4 +1,6 @@
-import jwt, datetime, os
+import jwt
+import datetime
+import os
 import psycopg2
 from flask import Flask, request
 
@@ -12,7 +14,6 @@ def get_db_connection():
                             port=5432)
     return conn
 
-
 @server.route('/login', methods=['POST'])
 def login():
     auth_table_name = os.getenv('AUTH_TABLE')
@@ -23,19 +24,17 @@ def login():
     conn = get_db_connection()
     cur = conn.cursor()
     query = f"SELECT email, password FROM {auth_table_name} WHERE email = %s"
-    res = cur.execute(query, (auth.username,))
-    
-    if res is None:
-        user_row = cur.fetchone()
-        email = user_row[0]
-        password = user_row[1]
+    cur.execute(query, (auth.username,))
+    user_row = cur.fetchone()
 
-        if auth.username != email or auth.password != password:
-            return 'Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'}
-        else:
-            return CreateJWT(auth.username, os.environ['JWT_SECRET'], True)
-    else:
+    if user_row is None:
         return 'Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'}
+    
+    email, password = user_row
+    if auth.username != email or auth.password != password:
+        return 'Could not verify', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'}
+    
+    return CreateJWT(auth.username, os.environ['JWT_SECRET'], True)
 
 def CreateJWT(username, secret, authz):
     return jwt.encode(
@@ -51,18 +50,19 @@ def CreateJWT(username, secret, authz):
 
 @server.route('/validate', methods=['POST'])
 def validate():
-    encoded_jwt = request.headers['Authorization']
+    auth_header = request.headers.get('Authorization')
     
-    if not encoded_jwt:
+    if not auth_header:
         return 'Unauthorized', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'}
 
-    encoded_jwt = encoded_jwt.split(' ')[1]
     try:
+        encoded_jwt = auth_header.split(' ')[1]
         decoded_jwt = jwt.decode(encoded_jwt, os.environ['JWT_SECRET'], algorithms=["HS256"])
-    except:
+    except (IndexError, jwt.PyJWTError):
         return 'Unauthorized', 401, {'WWW-Authenticate': 'Basic realm="Login required!"'}
-    
+
     return decoded_jwt, 200
+
 
 if __name__ == '__main__':
     server.run(host='0.0.0.0', port=5000)

@@ -52,6 +52,7 @@ test_auth_service:
     - cd src/auth-service
     - mkdir -p test-reports
     - pip install --no-cache-dir -r requirements.txt
+    - pip install --no-cache-dir pytest pytest-cov
     - pytest tests/ --junitxml=test-reports/report.xml --cov=. --cov-report=xml:coverage.xml
 
 # Jobs pour converter-service
@@ -63,6 +64,7 @@ test_converter_service:
     - cd src/converter-service
     - mkdir -p test-reports
     - pip install --no-cache-dir -r requirements.txt
+    - pip install --no-cache-dir pytest pytest-cov
     - pytest tests/ --junitxml=test-reports/report.xml --cov=. --cov-report=xml:coverage.xml
 
 # Jobs pour gateway_service
@@ -74,6 +76,7 @@ test_gateway_service:
     - cd src/gateway_service
     - mkdir -p test-reports
     - pip install --no-cache-dir -r requirements.txt
+    - pip install --no-cache-dir pytest pytest-cov
     - pytest tests/ --junitxml=test-reports/report.xml --cov=. --cov-report=xml:coverage.xml
 
 # Jobs pour notification-service
@@ -85,4 +88,5 @@ test_notification_service:
     - cd src/notification-service
     - mkdir -p test-reports
     - pip install --no-cache-dir -r requirements.txt
+    - pip install --no-cache-dir pytest pytest-cov
     - pytest tests/ --junitxml=test-reports/report.xml --cov=. --cov-report=xml:coverage.xml      

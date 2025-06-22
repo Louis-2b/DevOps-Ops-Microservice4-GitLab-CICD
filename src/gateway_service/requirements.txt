@@ -32,4 +32,5 @@ zipp==3.10.0
 pytest==7.4.0
 pytest-cov==4.1.0
 requests-mock==1.11.0
+pytest-cov==4.1.0
 

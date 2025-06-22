@@ -1,0 +1,56 @@
+workflow:
+    name: Microservices python Pipeline  # Nom personnalisé du pipeline
+    rules:
+        - if: $CI_COMMIT_BRANCH == 'main' || $CI_COMMIT_BRANCH =~ /^python/
+          when: always
+        - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^python/ && $CI_PIPELINE_SOURCE == 'merge_request_event'
+          when: always 
+        - when: never  # Par défaut, ne rien exécuter
+
+
+stages:
+  - build
+  - test
+
+
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  PYTEST_ADDOPTS: "--junitxml=report.xml"
+
+
+# Cache global pour éviter la duplication
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .cache/pip/
+
+
+build:
+  image: python:3.11-slim
+  stage: build
+  before_script: 
+    - python -m pip install --upgrade pip
+  script: 
+    - pip install -r requirements.txt
+  artifacts:
+    paths:
+      - .cache/pip/
+    expire_in: 1 week
+
+test:
+  image: python:3.11-slim 
+  stage: test
+  needs: ["build"]
+  before_script: 
+    - python -m pip install --upgrade pip
+    - pip install -r requirements-test.txt
+  script: 
+    - pytest tests/ --verbose
+  artifacts:
+    when: always
+    paths:
+      - report.xml
+    reports:
+      junit: report.xml
+    expire_in: 1 week  
+  

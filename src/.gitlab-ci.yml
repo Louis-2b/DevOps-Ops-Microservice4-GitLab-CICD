@@ -1,0 +1,88 @@
+workflow:
+    name: Microservices python Pipeline  # Nom personnalisé du pipeline
+    rules:
+        - if: $CI_COMMIT_BRANCH == 'main' || $CI_COMMIT_BRANCH =~ /^python/
+          when: always
+        - if: $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^python/ && $CI_PIPELINE_SOURCE == 'merge_request_event'
+          when: always
+        - when: never # Par défaut, ne rien faire  
+
+
+stages:
+  - test
+
+
+## Configuration de cache globale pour accélérer pip install
+cache:
+  key: "$CI_COMMIT_REF_SLUG"
+  paths:
+    - .cache/pip
+
+
+## Configuration commune pour tous les jobs de test
+.test-setup: &test-setup
+  image: python:3.11-slim
+  stage: test
+  before_script:
+    - python --version
+    - pip install --upgrade pip
+    - mkdir -p .cache/pip
+    - export PIP_CACHE_DIR=.cache/pip
+  cache:
+    key: "$CI_COMMIT_REF_SLUG-$SERVICE_NAME"
+    paths:
+      - .cache/pip
+    policy: pull-push
+  artifacts:
+    when: always
+    reports:
+      junit:
+        - "src/$SERVICE_NAME/test-reports/*.xml"
+    paths:
+      - "src/$SERVICE_NAME/coverage.xml"
+    expire_in: 1 week
+
+
+# Jobs pour auth-service
+test_auth_service:
+  <<: *test-setup
+  variables:
+    SERVICE_NAME: auth-service
+  script:
+    - cd src/auth-service
+    - mkdir -p test-reports
+    - pip install --no-cache-dir -r requirements.txt
+    - pytest tests/ --junitxml=test-reports/report.xml --cov=. --cov-report=xml:coverage.xml
+
+# Jobs pour converter-service
+test_converter_service:
+  <<: *test-setup
+  variables:
+    SERVICE_NAME: converter-service
+  script:
+    - cd src/converter-service
+    - mkdir -p test-reports
+    - pip install --no-cache-dir -r requirements.txt
+    - pytest tests/ --junitxml=test-reports/report.xml --cov=. --cov-report=xml:coverage.xml
+
+# Jobs pour gateway_service
+test_gateway_service:
+  <<: *test-setup
+  variables:
+    SERVICE_NAME: gateway_service
+  script:
+    - cd src/gateway_service
+    - mkdir -p test-reports
+    - pip install --no-cache-dir -r requirements.txt
+    - pytest tests/ --junitxml=test-reports/report.xml --cov=. --cov-report=xml:coverage.xml
+
+# Jobs pour notification-service
+test_notification_service:
+  <<: *test-setup
+  variables:
+    SERVICE_NAME: notification-service
+  script:
+    - cd src/notification-service
+    - mkdir -p test-reports
+    - pip install --no-cache-dir -r requirements.txt
+    - pytest tests/ --junitxml=test-reports/report.xml --cov=. --cov-report=xml:coverage.xml      

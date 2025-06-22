@@ -1,6 +1,6 @@
-##############################################
-# Étape 1 : build de l'application Spring boot
-##############################################
+##################################
+# Étape 1 : build de l'application
+##################################
 # Construction de l'environnement de build
 FROM python:3.11-slim AS builder
 

@@ -5,9 +5,9 @@ import pika
 from flask import Flask, request, send_file
 from pymongo import MongoClient
 from bson.objectid import ObjectId
-from auth import validate
-from auth_svc import access
-from storage import util
+from .auth import validate
+from .auth_svc import access
+from .storage import util
 
 fs_videos = None
 fs_mp3s = None

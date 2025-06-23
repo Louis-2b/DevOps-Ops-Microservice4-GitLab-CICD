@@ -30,7 +30,6 @@ Werkzeug==2.2.2
 wrapt==1.14.1
 zipp==3.10.0
 pytest==7.4.0
-pytest-cov==4.1.0
 requests-mock==1.11.0
 pytest-cov==4.1.0
 pytest-mock==3.10.0

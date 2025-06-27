@@ -1,0 +1,16 @@
+# Service pour PostgreSQL externe
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-svc
+  namespace: development
+
+spec:
+  selector:
+    app: auth-deploy
+
+  ports:
+  - port: 5000
+    targetPort: 5000
+    protocol: TCP
+  type: ClusterIP

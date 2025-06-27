@@ -1,0 +1,82 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: development
+  name: auth-deploy
+
+spec:
+  replicas: 2  # Lance 2 pods pour assurer haute disponibilité
+  selector:
+    matchLabels:
+      app: auth-deploy
+
+  strategy:
+    type: RollingUpdate  # Mise à jour continue
+    rollingUpdate:
+      maxSurge: 1  # → on peut temporairement avoir 3 pods pendant la mise à jour
+      maxUnavailable: 1  # → au maximum 1 pod indisponible pendant le déploiement 
+
+  template:
+    metadata:
+      labels:
+        app: auth-deploy
+
+    spec:
+      containers:
+      - name: auth-app
+        image: meshredded/bien-parler
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 5000
+
+        env:
+        # Configuration PostgreSQL
+        - name: DATABASE_HOST
+          value: "postgres-external"
+
+        - name: DATABASE_PORT
+          value: "5432"
+
+        - name: DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: username
+
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: password
+
+        - name: DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: postgres-credentials
+              key: database
+        
+        # Configuration JWT
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: auth-secrets
+              key: JWT_SECRET  
+
+         # Configuration de la table depuis le ConfigMap
+        - name: AUTH_TABLE
+          valueFrom:
+            configMapKeyRef:
+              name: auth-configmap
+              key: AUTH_TABLE  
+                 
+        resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"      
+
+
+        
